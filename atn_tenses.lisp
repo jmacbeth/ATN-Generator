@@ -22,7 +22,9 @@
      ;; removed the obj and tried to add while clause
      (c1-test (tok l1 voice active form none aspect none auxverb none tense
                past mood indic aux none time 1 pron none agt c2 obj c3 vs () )) ;; see
-     (conj-test (conj-word l-and comma c node-list (c1 c3 c14) lab conj-gen0)) ;; see
+     (conj-test (conj-word l-and comma c node-list (c1 c3 c14) lab conj-gen0))
+     (embed-test1 (conj-word l-and node-list (c1 c3) ))
+     (embed-test2 (conj-word l-and node-list (c10 c14) ))
      (c2 (tok l2 nbr sing det none pron none agt* (c1 c10 c14 c17) ns ()) ) ;; John
      (c3 (tok l3 voice active form progressive aspect none auxverb none tense past mood indic aux prog pron none time 1 agt c4 inst c5 loc c6 vs ()) ) ;; wrestle 
      (c4 (tok l4 nbr sing det none agt* (c3 c17) pron none ns ()) ) ;; Mary
@@ -77,18 +79,18 @@
     
      ;; New in summer 2018
      ;; compound sentences, e.g. "x while y", need a special semantic node that points to both clauses
-     (cmp1 (paths ((s cmp2)))) ;; generate main clause
+     (cmp1 (paths ((s cmp2) (conj-gen0 cmp2)))) ;; generate main clause
      (cmp2 (paths ((subord-cl cmp3)))) ;; p-subord is the subordinate clause preposition e.g. "while"
      (cmp3 (paths ((t))))
 
      ;; while y, x.  Need to have the pair "comma p" in the structure
-     (cmp4 (paths ((subord-cl cmp5)))) 
+     (cmp4 (paths ((subord-cl cmp5))))
      (cmp5 (paths ((comma cmp6)))) 
-     (cmp6 (paths ((s cmp7)))) 
+     (cmp6 (paths ((s cmp7) (conj-gen0 cmp7))))
      (cmp7 (paths ((t))))
 
      (subord-cl (paths ((p-subord subord-cl1))))
-     (subord-cl1 (paths ((s subord-cl2))))
+     (subord-cl1 (paths ((s subord-cl2) (conj-gen0 subord-cl2))))
      (subord-cl2 (paths ((t))))
 
      ;; conjunction
@@ -185,6 +187,7 @@
    )
   )
 
+  
 ;; Need this for creating new structure nodes if needed.  Copied from Common LISP versions
 ;; of Mcdypar.
 (defun newsym (sym)
@@ -467,10 +470,6 @@
 (defun conj (structure)
   (list (get (get structure 'conj-word) 'pi))
   )
-
-;; test of conjunction stuff
-;;(progn (reset-property-list)
-;;      (gen 'conj-test))
 
 ;; working on generated embeddings here 
 (defun get-random-ungenerated-structure-from-list (x)
@@ -827,31 +826,39 @@
   )
 
 
-(defun gen-with-embedding-new (node node-list)
-  (if (null (get node 'lab)) ;; only generate if we haven't already
-      (progn
-        ;; Need to label the semantic network with the node in the grammar network where
-        ;; you want generation to start.  In this case, "s"
-	(setf (get node 'lab) 's)
-        (setq embed-count 3)
-        (setup-ns-embedding)  ;; sets the global symbol for ns embedding
-	(let* ((node-to-embed (get-next-ungenerated-structure-from-list node-list))
-	       (time-preposition (cond ((null node-to-embed) nil)
-				       ((= (get node 'time) (get node-to-embed 'time)) "while")
-				       ((= (1- (get node 'time)) (get node-to-embed 'time)) "when")
-                                       ;; also set 'before-time in the main clause node
-                                       ((< (get node 'time) (get node-to-embed 'time))
-                                        (setf (get node 'before-time) (get node-to-embed 'time)) "before")
-                                       ;; also set 'after-time in the main clause node
-				       (T (setf (get node 'after-time) (get node-to-embed 'time)) "after"))))
-	  (cond ((null node-to-embed) (gen node))
-		(T (gen-time-preposition node node-to-embed time-preposition)))
-          )
-        )
-      )
+;; assume that we're given a node list to generate
+(defun gen-with-embedding-new (node-list)
+  (cond ((nodes-all-same-time node-list)) ;; then split anywhere and use while
+	((nodes-find-time-split node-list))
+	)
   )
 
+(defun nodes-find-split-points (node-list)
+  (cond ((null (rest node-list)) nil) ;; last node in the list, so return nil
+	((= (get (first node-list) 'time) (get (second node-list) 'time))
+	 (nodes-find-split-points (rest node-list)))
+	(t (append
+	    (list (second node-list))
+	    (nodes-find-split-points (rest node-list))))  ;; times weren't the same
+	)
+  )
 
+;; test
+;;(nodes-find-split-points '(c1 c3 c10 c14))
+
+
+(let* ((node-list '(c1 c3 c10 c14))
+       (split-points (nodes-find-split-points node-list))
+       (split-point (if split-points (get-random-nth (nodes-find-split-points node-list))))
+       (split-index (if split-points (1- (position split-point node-list)))))
+  (cond ((null split-points)
+	 (gen (make-subord-clause-semantic-node node node-to-embed 'l-while)))
+	(list (subseq node-list 0 split-index)
+	      (subseq node-list split-index))
+	)
+  )
+
+	  
 ;; makes a new semantic node for a compound sentence with a subordinate clause
 ;; ready to generate ... right now set to generate on 'cmp4 from the grammar
 (defun make-subord-clause-semantic-node (node node-to-embed prep-l-node)
@@ -861,6 +868,19 @@
     (setf (symbol-plist new-subord-sym) (list 'tok prep-l-node 's node-to-embed 'p-subord 'p))
     new-compound-sym)
   )
+
+  
+;; makes a new semantic node for a compound sentence with a subordinate clause
+;; ready to generate ... right now set to generate on 'cmp4 from the grammar
+(defun make-subord-clause-semantic-node2 (conj-node1 conj-node2 prep-l-node)
+  (let ((new-compound-sym (newsym 'compound-sent))
+        (new-subord-sym (newsym 'subord-clause)))
+    (setf (symbol-plist new-compound-sym) (list 'conj-gen0 conj-node1 'subord-cl new-subord-sym 'lab 'cmp4 'comma 'c))
+    (setf (symbol-plist new-subord-sym) (list 'tok prep-l-node 'conj-gen0 conj-node2 'p-subord 'p))
+    new-compound-sym)
+  )
+
+
 
 
 ;; eventually you would like to swap these half of the time
@@ -876,7 +896,12 @@
 
 ;; test 
 (progn (reset-property-list)
-      (do-embed-time-relation 'c3 'c1-test))
+      (gen (make-subord-clause-semantic-node2 'embed-test1 'embed-test2 'l-while)))
+
+;; test of conjunction stuff
+;;(progn (reset-property-list)
+;;      (gen 'conj-test))
+
 
 
 (defun reset-and-gen () 
