@@ -1,5 +1,5 @@
 # ATN-Generator
-LISP Code for an augmented transition network (ATN) natural language generator system
+LISP Code for an augmented transition network (ATN) natural language generator system based on Simmons, R. and Slocum, J., 1972. Generating English discourse from semantic networks. Communications of the ACM, 15(10), pp.891-905.
 
 Examples:
 
