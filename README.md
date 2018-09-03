@@ -1,5 +1,5 @@
 # ATN-Generator
-LISP Code for an augmented transition network (ATN) natural language generator system based on Simmons, R. and Slocum, J., 1972. Generating English discourse from semantic networks. Communications of the ACM, 15(10), pp.891-905.
+LISP Code for an augmented transition network (ATN) natural language generator system [1].
 
 Examples:
 
@@ -10,3 +10,5 @@ Examples:
 "John went. Mary and John gleefully drank the champagne. She was wrestling with a bottle at the liquor bar, where he drew the bottle cork. John saw."
 
 "John saw before John drew the bottle cork. Mary was wrestling with a bottle at the liquor bar before she and John, who went to help, gleefully drank the champagne."
+
+[1] Simmons, R. and Slocum, J., 1972. Generating English discourse from semantic networks. Communications of the ACM, 15(10), pp.891-905.
