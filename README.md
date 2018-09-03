@@ -1,5 +1,5 @@
 # ATN-Generator
-LISP Code for an augmented transition network (ATN) natural language generator system [1].
+Lisp code for an augmented transition network (ATN) natural language generator system [1].
 
 Examples:
 
