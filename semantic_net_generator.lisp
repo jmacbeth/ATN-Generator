@@ -1,5 +1,6 @@
 ;;This code generates a semantic network using Conceptual Dependency structure
 ;;It can only deal with atrans right now. 
+;;Now it works for generating once. Still have bug matching g-nodes when it generates from multiple cds and frameworks
 
 (defun generate (cd frame) 
   (newsym 'g)
