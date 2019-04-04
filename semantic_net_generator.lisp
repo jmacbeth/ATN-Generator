@@ -14,7 +14,7 @@
    ((obj) 
    (append `(objsym (tok ,(caadr (assoc (cadr x) (cdr cd))) det indef nbr sing pron none obj* (,lexptrsym) ns ())) ))
    ((lexptr) ;; used mapcar to deal with the verb as well
-   (append `(lexptrsym (tok ,(second frame) voice active form none aspect none auxverb none tense past mood indic aux none time 1 pron none agt (,agtsym) obj (,objsym) vs () )))
+   (append `(lexptrsym (tok ,(cadr(assoc 'lexptr frame)) voice active form none aspect none auxverb none tense past mood indic aux none time 1 pron none agt (,agtsym) obj (,objsym) vs () )))
  )
  ))
   frame
@@ -26,7 +26,7 @@
 (defparameter *frame1* '((agt actor) (obj object) (lexptr l-give)))
 
 (defparameter *cd2* '(atrans (actor (l-mary)) (object (l-beer))))
-(defparameter *frame2* '((agt actor) (obj object) (lexptr l-drink)))
+(defparameter *frame2* '((agt actor) (obj object) (lexptr l-buy)))
 
 
 (defun newsym (sym)
@@ -36,5 +36,6 @@
     (setf (get sym 'usage-count) (1+ count))
     (intern (concatenate 'string (string sym)
        (prin1-to-string count)))))
+
 
 (generate *cd1* *frame1*)
