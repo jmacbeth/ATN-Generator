@@ -720,6 +720,7 @@
   (format t story-output)
   )
 
+(symbol-plist 'g1)
 (reset-and-gen)
 
 ;; MORE NOTES
