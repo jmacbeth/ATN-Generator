@@ -15,7 +15,7 @@
    ((obj) 
    `((,objsym (tok ,(caadr (assoc (cadr x) (cdr cd))) det indef nbr sing pron none obj* (,lexptrsym) ns ()))) )
    ((lexptr) ;; used mapcar to deal with the verb as well
-    `((,lexptrsym (tok ,(cadr(assoc 'lexptr frame)) voice active form none aspect none auxverb none tense past mood indic aux none time 1 pron none agt (,agtsym) obj (,objsym) vs () )))
+    `((,lexptrsym (tok ,(cadr(assoc 'lexptr frame)) voice active form none aspect none auxverb none tense past mood indic aux none time 1 pron none agt ,agtsym  obj ,objsym iobj ,prepsym vs () )))
     )
   ((iobj) 
     (if (eq (third(assoc 'iobj frame)) nil)
@@ -43,8 +43,9 @@
     (intern (concatenate 'string (string sym)
 			 (prin1-to-string count)))))
 
-(setq plist (append (generate *cd1* *frame1*)
-     '((l-give (pi "give" present "gives" past "gave" past-part "given" prog "giving" terminal t) )
+(setq plist (append (generate *cd1* *frame2*)
+      '((l-give (pi "give" present "gives" past "gave" past-part "given" prog "giving" terminal t) )
+        (l-receive (pi "receive" present "receives" past "received" past-part "received" prog "receiving" terminal t) )
         (l1 (pi "see" present "sees" past "saw" past-part "seen" prog "seeing" terminal t) )
        (l-book (pi "book" pron-agt "it" pron-pred "it" terminal t) )
        (l-john (pi "John" pron-agt "he" pron-pred "him" terminal t) )
@@ -55,8 +56,9 @@
      (l7 (pi "bottle" pron-agt "it" pron-pred "it" terminal t) )
       (l8 (pi "bar" pron-agt "it" pron-pred "there" terminal t) )
      (l9 (pi "liquor" pron-agt "it" pron-pred "it" terminal t) )
-     (l10 (pi "go" present "goes" past "went" past-part "gone" prog "going" terminal t))
-     (l11 (pi "to"))
+	(l10 (pi "go" present "goes" past "went" past-part "gone" prog "going" terminal t))
+	(l11 (pi "to"))
+     (l-from (pi "from"))
      (l12 (pi "over" pron-agt "there" pron-pred "there" terminal t) )
      (l-cork (pi "cork" pron-agt "it" pron-pred "it" terminal t) )
      (l-champagne (pi "champagne" pron-agt "it" pron-pred "it" terminal t) )
@@ -166,15 +168,12 @@
 
 
 ;;(print plist)
-(defun reset-property-list () (mapcar 
-#'(lambda (x) 
-(setf (symbol-plist (first x)) (copy-list (second x))))
+(defun reset-property-list () (mapcar #'(lambda (x) (setf (symbol-plist (first x)) (copy-list (second x))))
     plist
 )
  )
- 
 
-
+(symbol-plist 'g0)
 ;; GENERATION FUNCTIONS
 ;; voice form aspect tense mood
 
@@ -715,12 +714,11 @@
   ;; Need to label the semantic network with the node in the grammar network where
   ;; you want generation to start.
   ;; c17 c3 c10 c14 c1
-  (setq story-output (post-process-paragraph (remove nil (gen-random-from-list '(g2)))))
+  (setq story-output (post-process-paragraph (remove nil (gen-random-from-list '(g37))))) ;;need to fix this
   (format t "~%~%~%           ** STORY OUTPUT **~%~%")
   (format t story-output)
   )
 
-(symbol-plist 'g1)
 (reset-and-gen)
 
 ;; MORE NOTES
@@ -748,3 +746,4 @@
 
 ;; (progn (reset-property-list) (voice 'e1) (form 'e1) (aspect 'e1) (tense 'e1) (get 'e1 'agt))
 ;; (progn (reset-property-list) (voice 'c1) (form 'c1) (aspect 'c1) (tense 'c1) (get 'c1 'subj))
+
