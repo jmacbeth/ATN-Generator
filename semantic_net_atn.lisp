@@ -8,6 +8,7 @@
   (setq lexptrsym (newsym 'g)) ;;g2
   (setq iobjsym (newsym 'g)) ;;g3
   (setq prepsym (newsym 'g)) ;;g4
+  (setq gnodes
   (apply 'append  (mapcar  #'(lambda (x)  
   (case (car x)
    ((agt)
@@ -26,7 +27,9 @@
     )
 	       )
   frame
-)))
+  )))
+  (append (list lexptrsym) gnodes)
+  )
  
 (defparameter *cd1* '(atrans (actor (l-john)) (object (l-book)) (from (l-john)) (to (l-mary)) ))
 ;; changed the format of the "framework" expression to make code more elegant
@@ -43,7 +46,9 @@
     (intern (concatenate 'string (string sym)
 			 (prin1-to-string count)))))
 
-(setq plist (append (generate *cd1* *frame2*)
+(defparameter *alist* (generate *cd1* *frame1*))
+
+(setq plist (append (cdr *alist*)
       '((l-give (pi "give" present "gives" past "gave" past-part "given" prog "giving" terminal t) )
         (l-receive (pi "receive" present "receives" past "received" past-part "received" prog "receiving" terminal t) )
         (l1 (pi "see" present "sees" past "saw" past-part "seen" prog "seeing" terminal t) )
@@ -711,10 +716,11 @@
 (defun reset-and-gen () 
   (reset-property-list)
   (setq clause-generate-probability 50 do-embed nil generated-nodes '())
+  (setq gnode (list (first *alist*)))
   ;; Need to label the semantic network with the node in the grammar network where
   ;; you want generation to start.
   ;; c17 c3 c10 c14 c1
-  (setq story-output (post-process-paragraph (remove nil (gen-random-from-list '(g37))))) ;;need to fix this
+  (setq story-output (post-process-paragraph (remove nil (gen-random-from-list gnode))))
   (format t "~%~%~%           ** STORY OUTPUT **~%~%")
   (format t story-output)
   )
