@@ -6,6 +6,7 @@
 
 (defparameter *story* (read (open "story.lisp")))
 
+
 (defun generate (cd frame) 
   (setq agtsym (newsym 'g)) ;;g0
   (setq objsym (newsym 'g)) ;;g1
@@ -37,7 +38,7 @@
  
 (defparameter *cd1* '(atrans (actor (l-john)) (object (l-book)) (from (l-john)) (to (l-mary)) ))
 ;; changed the format of the "framework" expression to make code more elegant
-(defparameter *frame1* '((agt actor) (obj object) (lexptr l-give)))
+(defparameter *frame1* '((agt actor) (obj object) (lexptr l-give) (iobj to (prep l-to))))
 
 (defparameter *frame2* '((agt to) (obj object) (lexptr l-receive) (iobj actor (prep l-from)) )) ;; mary receive book from john
 
@@ -50,10 +51,11 @@
     (intern (concatenate 'string (string sym)
 			 (prin1-to-string count)))))
 
-(defparameter *alist* (generate *cd1* *frame1*))
+;; gnodes
+;;(defparameter *alist* (generate *cd1* *frame2*))
 
-
-(setq plist (append (cdr *alist*)
+;; property list
+(setq plist (append
       '((l-give (pi "give" present "gives" past "gave" past-part "given" prog "giving" terminal t) )
         (l-receive (pi "receive" present "receives" past "received" past-part "received" prog "receiving" terminal t) )
         (l1 (pi "see" present "sees" past "saw" past-part "seen" prog "seeing" terminal t) )
@@ -67,7 +69,7 @@
       (l8 (pi "bar" pron-agt "it" pron-pred "there" terminal t) )
      (l9 (pi "liquor" pron-agt "it" pron-pred "it" terminal t) )
 	(l10 (pi "go" present "goes" past "went" past-part "gone" prog "going" terminal t))
-	(l11 (pi "to"))
+	(l-to (pi "to"))
      (l-from (pi "from"))
      (l12 (pi "over" pron-agt "there" pron-pred "there" terminal t) )
      (l-cork (pi "cork" pron-agt "it" pron-pred "it" terminal t) )
@@ -91,10 +93,11 @@
 
 
 ;;(print plist)
-(defun reset-property-list () (mapcar #'(lambda (x) (setf (symbol-plist (first x)) (copy-list (second x))))
-    plist
-)
- )
+(defun reset-property-list (alist)
+    (mapcar #'(lambda (x) (setf (symbol-plist (first x)) (copy-list (second x))))
+    (append plist alist)
+))
+
 
 (symbol-plist 'g0)
 ;; GENERATION FUNCTIONS
@@ -631,17 +634,21 @@
       )
   )
 
+;; add a add-to-property-list function
+
 ;;c17 c3 c10 c14 c1
-(defun reset-and-gen () 
-  (reset-property-list)
+(defun reset-and-gen ()
+  (setq alist (generate *cd1* *frame1*))
+  (reset-property-list (cdr alist))
   (setq clause-generate-probability 50 do-embed nil generated-nodes '())
-  (setq gnode (list (first *alist*)))
+  (setq gnode (list (first alist)))
   ;; Need to label the semantic network with the node in the grammar network where
   ;; you want generation to start.
   ;; c17 c3 c10 c14 c1
   (setq story-output (post-process-paragraph (remove nil (gen-random-from-list gnode))))
   (format t "~%~%~%           ** STORY OUTPUT **~%~%")
   (format t story-output)
+  story-output
   )
 
 (reset-and-gen)
@@ -671,4 +678,5 @@
 
 ;; (progn (reset-property-list) (voice 'e1) (form 'e1) (aspect 'e1) (tense 'e1) (get 'e1 'agt))
 ;; (progn (reset-property-list) (voice 'c1) (form 'c1) (aspect 'c1) (tense 'c1) (get 'c1 'subj))
+
 
