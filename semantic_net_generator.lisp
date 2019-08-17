@@ -4,31 +4,39 @@
 ;; Changed the format of the "framework" expression to make code more elegant
 ;; Added the "special requirement" part of the framework
 
-(defun generate (cd frame) 
-  (setq agtsym (newsym 'g)) ;;g0
-  (setq objsym (newsym 'g)) ;;g1
-  (setq lexptrsym (newsym 'g)) ;;g2
-  (setq iobjsym (newsym 'g)) ;;g3
-  (setq prepsym (newsym 'g)) ;;g4
-  (apply 'append  (mapcar  #'(lambda (x)  
-  (case (car x)
-   ((agt)
-   `((,agtsym (tok ,(caadr (assoc (cadr x) (cdr cd))) nbr sing det none pron none agt* (,lexptrsym) ns ()))) )
-   ((obj) 
-   `((,objsym (tok ,(caadr (assoc (cadr x) (cdr cd))) det indef nbr sing pron none obj* (,lexptrsym) ns ()))) )
-   ((lexptr) ;; used mapcar to deal with the verb as well
-    `((,lexptrsym (tok ,(cadr(assoc 'lexptr frame)) voice active form none aspect none auxverb none tense past mood indic aux none time 1 pron none agt (,agtsym) obj (,objsym) vs () )))
-    )
-  ((iobj) 
-    (if (eq (third(assoc 'iobj frame)) nil)
-         `((,iobjsym (tok ,(caadr (assoc (cadr x) (cdr cd))) nbr sing det none pron none obj* (,lexptrsym) ns ())) )
-         `((,iobjsym (tok ,(caadr (assoc (cadr x) (cdr cd))) nbr sing det none pron none obj* (,lexptrsym) ns ()))
-         (,prepsym (tok ,(second(third(assoc 'iobj frame))) obj ,iobjsym pobj p )))
+(defun generate (cd frame)
+  (let (
+        (agtsym (newsym 'g))
+        (objsym (newsym 'g))
+        (lexptrsym (newsym 'g))
+        (iobjsym (newsym 'g))
+        (prepsym (newsym 'g))
+        )
+    (apply
+     'append
+     (mapcar
+      #'(lambda (x)  
+          (case (car x)
+            ((agt)
+             `((,agtsym (tok ,(caadr (assoc (cadr x) (cdr cd))) nbr sing det none pron none agt* (,lexptrsym) ns ()))) )
+            ((obj) 
+             `((,objsym (tok ,(caadr (assoc (cadr x) (cdr cd))) det indef nbr sing pron none obj* (,lexptrsym) ns ()))) )
+            ((lexptr) ;; used mapcar to deal with the verb as well
+             `((,lexptrsym (tok ,(cadr(assoc 'lexptr frame)) voice active form none aspect none auxverb none tense past mood indic aux none time 1 pron none agt (,agtsym) obj (,objsym) vs () )))
+             )
+            ((iobj) 
+             (if (eq (third(assoc 'iobj frame)) nil)
+                 `((,iobjsym (tok ,(caadr (assoc (cadr x) (cdr cd))) nbr sing det none pron none obj* (,lexptrsym) ns ())) )
+                 `((,iobjsym (tok ,(caadr (assoc (cadr x) (cdr cd))) nbr sing det none pron none obj* (,lexptrsym) ns ()))
+                   (,prepsym (tok ,(second(third(assoc 'iobj frame))) obj ,iobjsym pobj p )))
+                 ))
+            )
+	  )
+      frame
       ))
+    
     )
-	       )
-  frame
-)))
+  )
  
 (defparameter *cd1* '(atrans (actor (l-john)) (object (l-book)) (from (l-john)) (to (l-mary)) ))
 ;; changed the format of the "framework" expression to make code more elegant
