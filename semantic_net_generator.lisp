@@ -3,6 +3,8 @@
 ;; Now it works for generating once. Still have bug matching g-nodes when it generates from multiple cds and frameworks
 ;; Changed the format of the "framework" expression to make code more elegant
 ;; Added the "special requirement" part of the framework
+;; BEWARE: THERE IS A COPY OF THIS CODE IN semantic_net_atn.lisp.  Need to fix this so that it's only in one place!
+
 
 (defun generate (cd frame)
   (let (
@@ -22,7 +24,7 @@
             ((obj) 
              `((,objsym (tok ,(caadr (assoc (cadr x) (cdr cd))) det indef nbr sing pron none obj* (,lexptrsym) ns ()))) )
             ((lexptr) ;; used mapcar to deal with the verb as well
-             `((,lexptrsym (tok ,(cadr(assoc 'lexptr frame)) voice active form none aspect none auxverb none tense past mood indic aux none time 1 pron none agt (,agtsym) obj (,objsym) vs () )))
+             `((,lexptrsym (tok ,(cadr(assoc 'lexptr frame)) voice active form none aspect none auxverb none tense past mood indic aux none time 1 pron none agt ,agtsym  obj ,objsym iobj ,prepsym vs () )))
              )
             ((iobj) 
              (if (eq (third(assoc 'iobj frame)) nil)
@@ -37,7 +39,9 @@
     
     )
   )
- 
+
+
+
 (defparameter *cd1* '(atrans (actor (l-john)) (object (l-book)) (from (l-john)) (to (l-mary)) ))
 ;; changed the format of the "framework" expression to make code more elegant
 (defparameter *frame1* '((agt actor) (obj object) (lexptr l-give)))
